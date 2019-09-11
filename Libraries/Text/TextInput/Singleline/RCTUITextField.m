@@ -40,6 +40,12 @@
   _textWasPasted = NO;
 }
 
+- (void)setAttributedTextWithImage:(NSAttributedString *)attributedText
+                   descendantViews:(NSArray<UIView *> *)descendantViews
+{
+  
+}
+
 #pragma mark - Properties
 
 - (void)setTextContainerInset:(UIEdgeInsets)textContainerInset

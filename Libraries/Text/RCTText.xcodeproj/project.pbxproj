@@ -439,6 +439,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = 58B511921A9E6C1200147676;
@@ -670,6 +671,10 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../Image/\"",
+					"\"$(SRCROOT)/../../React/Base\"",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -681,6 +686,10 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../Image/\"",
+					"\"$(SRCROOT)/../../React/Base\"",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

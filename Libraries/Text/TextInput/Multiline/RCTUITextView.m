@@ -6,11 +6,14 @@
  */
 
 #import "RCTUITextView.h"
+#import "RCTImageView.h"
+#import "RCTImageSource.h"
 
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
 
 #import "RCTBackedTextInputDelegateAdapter.h"
+#import "RCTBaseTextShadowView.h"
 
 @implementation RCTUITextView
 {
@@ -108,6 +111,46 @@ static UIColor *defaultPlaceholderColor()
   _placeholderView.textAlignment = textAlignment;
 }
 
+- (void)setAttributedTextWithImage:(NSAttributedString *)attributedText
+                   descendantViews:(NSArray<RCTImageView *> *)descendantViews
+{
+  
+  NSMutableAttributedString *newAttributedString = [[NSMutableAttributedString alloc] initWithAttributedString:attributedText];
+  __block int index = 0;
+  [attributedText enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:0
+                          usingBlock:
+   ^(RCTShadowView *shadowView, NSRange range, __unused BOOL *stop) {
+     if (!shadowView) {
+       return;
+     }
+    
+     
+     CGSize fittingSize = [shadowView sizeThatFitsMinimumSize:CGSizeMake(30, 30)
+                                                  maximumSize:CGSizeMake(30, 30)];
+     NSTextAttachment *attachment = [NSTextAttachment new];
+     NSString *test = [[descendantViews[index].imageSources[0].request.URL.absoluteString componentsSeparatedByString:@"/"] lastObject];
+    
+     attachment.image = [UIImage imageNamed:test];
+     attachment.bounds = (CGRect){CGPointZero, fittingSize};
+     index = index + 1;
+     [newAttributedString addAttribute:NSAttachmentAttributeName value:attachment range:range];
+   }
+   ];
+  if (![super.attributedText.string isEqualToString:attributedText.string]) {
+    [super setAttributedText:newAttributedString];
+  } else {
+    // But if the text is preserved, we just copying the attributes from the source string.
+    if (![super.attributedText isEqualToAttributedString:attributedText]) {
+      [self copyTextAttributesFrom:attributedText];
+    }
+  }
+  
+  [self textDidChange];
+}
+
+
 - (void)setAttributedText:(NSAttributedString *)attributedText
 {
   // Using `setAttributedString:` while user is typing breaks some internal mechanics
@@ -116,6 +159,7 @@ static UIColor *defaultPlaceholderColor()
 
   // We try to avoid calling this method as much as we can.
   // If the text has changed, there is nothing we can do.
+
   if (![super.attributedText.string isEqualToString:attributedText.string]) {
     [super setAttributedText:attributedText];
   } else {

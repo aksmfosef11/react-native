@@ -6,11 +6,13 @@
  */
 
 #import "RCTBaseTextInputShadowView.h"
+#import "RCTImageView.h"
 
 #import <React/RCTBridge.h>
 #import <React/RCTShadowView+Layout.h>
 #import <React/RCTUIManager.h>
 #import <yoga/Yoga.h>
+#import "RCTTextView.h"
 
 #import "NSTextStorage+FontScaling.h"
 #import "RCTBaseTextInputView.h"
@@ -27,6 +29,7 @@
   NSTextStorage *_textStorage;
   NSTextContainer *_textContainer;
   NSLayoutManager *_layoutManager;
+  NSMapTable<id, NSTextStorage *> *_cachedTextStorages;
 }
 
 - (instancetype)initWithBridge:(RCTBridge *)bridge
@@ -34,6 +37,7 @@
   if (self = [super init]) {
     _bridge = bridge;
     _needsUpdateView = YES;
+    _cachedTextStorages = [NSMapTable strongToStrongObjectsMapTable];
 
     YGNodeSetMeasureFunc(self.yogaNode, RCTBaseTextInputShadowViewMeasure);
     YGNodeSetBaselineFunc(self.yogaNode, RCTTextInputShadowViewBaseline);
@@ -139,11 +143,12 @@
 
   // Removing all references to Shadow Views and tags to avoid unnececery retainning
   // and problems with comparing the strings.
-  [attributedText removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
-                            range:NSMakeRange(0, attributedText.length)];
+  // RCTBaseTextShadowViewEmbeddedShadowViewAttributeName 여기서 이미지를 지움
+//  [attributedText removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
+//                            range:NSMakeRange(0, attributedText.length)];
 
-  [attributedText removeAttribute:RCTTextAttributesTagAttributeName
-                            range:NSMakeRange(0, attributedText.length)];
+//  [attributedText removeAttribute:RCTTextAttributesTagAttributeName
+//                            range:NSMakeRange(0, attributedText.length)];
 
   if (self.text.length) {
     NSAttributedString *propertyAttributedText =
@@ -174,7 +179,43 @@
     baseTextInputView.reactPaddingInsets = paddingInsets;
 
     if (isAttributedTextChanged) {
-      baseTextInputView.attributedText = attributedText;
+      NSMutableArray<NSNumber *> *descendantViewTags = [NSMutableArray new];
+      [attributedText enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
+                              inRange:NSMakeRange(0, attributedText.length)
+                              options:0
+                           usingBlock:
+       ^(RCTShadowView *shadowView, NSRange range, __unused BOOL *stop) {
+         if (!shadowView) {
+           return;
+         }
+         
+         [descendantViewTags addObject:shadowView.reactTag];
+       }
+       ];
+        
+        NSMutableArray<UIView *> *descendantViews =
+        [NSMutableArray arrayWithCapacity:descendantViewTags.count];
+        [descendantViewTags enumerateObjectsUsingBlock:^(NSNumber *_Nonnull descendantViewTag, NSUInteger index, BOOL *_Nonnull stop) {
+          UIView *descendantView = viewRegistry[descendantViewTag];
+          if (!descendantView) {
+            return;
+          }
+          
+          [descendantViews addObject:descendantView];
+        }];
+      RCTImageView *test = (RCTImageView *)descendantViews[0];
+      NSLog(@"123%@",test);
+      NSLog(@"123%@",test.imageSources);
+      NSLog(@"123%@",test.image);
+
+      
+//        [textView setTextStorage:textStorage
+//                    contentFrame:contentFrame
+//                 descendantViews:descendantViews];
+      // 실제 Attributed Text
+      [baseTextInputView setAttributedTextWithImage:attributedText
+                                  descendantViews:descendantViews];
+//      baseTextInputView.attributedText = attributedText;
     }
   }];
 }
@@ -248,6 +289,123 @@
   ];
 
   return size.height + maximumDescender;
+}
+
+- (NSTextStorage *)textStorageAndLayoutManagerThatFitsSize:(CGSize)size
+                                        exclusiveOwnership:(BOOL)exclusiveOwnership
+{
+  NSValue *key = [NSValue valueWithCGSize:size];
+  NSTextStorage *cachedTextStorage = [_cachedTextStorages objectForKey:key];
+  
+  if (cachedTextStorage) {
+    if (exclusiveOwnership) {
+      [_cachedTextStorages removeObjectForKey:key];
+    }
+    
+    return cachedTextStorage;
+  }
+  
+  NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:size];
+  
+  textContainer.lineFragmentPadding = 0.0; // Note, the default value is 5.
+  textContainer.maximumNumberOfLines = _maximumNumberOfLines;
+  
+  NSLayoutManager *layoutManager = [NSLayoutManager new];
+  [layoutManager addTextContainer:textContainer];
+  
+  NSTextStorage *textStorage =
+  [[NSTextStorage alloc] initWithAttributedString:[self attributedTextWithMeasuredAttachmentsThatFitSize:size]];
+  
+  [self postprocessAttributedText:textStorage];
+  
+  [textStorage addLayoutManager:layoutManager];
+  
+  if (!exclusiveOwnership) {
+    [_cachedTextStorages setObject:textStorage forKey:key];
+  }
+  
+  return textStorage;
+}
+
+
+- (NSAttributedString *)attributedTextWithMeasuredAttachmentsThatFitSize:(CGSize)size
+{
+  NSMutableAttributedString *attributedText =
+  [[NSMutableAttributedString alloc] initWithAttributedString:[self attributedTextWithBaseTextAttributes:nil]];
+  
+  [attributedText beginEditing];
+  
+  [attributedText enumerateAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:0
+                          usingBlock:
+   ^(RCTShadowView *shadowView, NSRange range, __unused BOOL *stop) {
+     if (!shadowView) {
+       return;
+     }
+     
+     CGSize fittingSize = [shadowView sizeThatFitsMinimumSize:CGSizeZero
+                                                  maximumSize:size];
+     NSTextAttachment *attachment = [NSTextAttachment new];
+     attachment.bounds = (CGRect){CGPointZero, fittingSize};
+     [attributedText addAttribute:NSAttachmentAttributeName value:attachment range:range];
+   }
+   ];
+  
+  [attributedText endEditing];
+  
+  return [attributedText copy];
+}
+
+
+- (void)postprocessAttributedText:(NSMutableAttributedString *)attributedText
+{
+  __block CGFloat maximumLineHeight = 0;
+  
+  [attributedText enumerateAttribute:NSParagraphStyleAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                          usingBlock:
+   ^(NSParagraphStyle *paragraphStyle, __unused NSRange range, __unused BOOL *stop) {
+     if (!paragraphStyle) {
+       return;
+     }
+     
+     maximumLineHeight = MAX(paragraphStyle.maximumLineHeight, maximumLineHeight);
+   }
+   ];
+  
+  if (maximumLineHeight == 0) {
+    // `lineHeight` was not specified, nothing to do.
+    return;
+  }
+  
+  __block CGFloat maximumFontLineHeight = 0;
+  
+  [attributedText enumerateAttribute:NSFontAttributeName
+                             inRange:NSMakeRange(0, attributedText.length)
+                             options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+                          usingBlock:
+   ^(UIFont *font, NSRange range, __unused BOOL *stop) {
+     if (!font) {
+       return;
+     }
+     
+     if (maximumFontLineHeight <= font.lineHeight) {
+       maximumFontLineHeight = font.lineHeight;
+     }
+   }
+   ];
+  
+  if (maximumLineHeight < maximumFontLineHeight) {
+    return;
+  }
+  
+  CGFloat baseLineOffset = maximumLineHeight / 2.0 - maximumFontLineHeight / 2.0;
+  
+  [attributedText addAttribute:NSBaselineOffsetAttributeName
+                         value:@(baseLineOffset)
+                         range:NSMakeRange(0, attributedText.length)];
 }
 
 static YGSize RCTBaseTextInputShadowViewMeasure(YGNodeRef node, float width, YGMeasureMode widthMode, float height, YGMeasureMode heightMode)

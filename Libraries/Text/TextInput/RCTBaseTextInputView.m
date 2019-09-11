@@ -98,6 +98,50 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   return self.backedTextInputView.attributedText;
 }
 
+- (void)setAttributedTextWithImage:(NSAttributedString *)attributedText
+                   descendantViews:(NSArray<UIView *> *)descendantViews
+{
+  NSInteger eventLag = _nativeEventCount - _mostRecentEventCount;
+  BOOL textNeedsUpdate = NO;
+  // Remove tag attribute to ensure correct attributed string comparison.
+  NSMutableAttributedString *const backedTextInputViewTextCopy = [self.backedTextInputView.attributedText mutableCopy];
+  NSMutableAttributedString *const attributedTextCopy = [attributedText mutableCopy];
+  
+  [backedTextInputViewTextCopy removeAttribute:RCTTextAttributesTagAttributeName
+                                         range:NSMakeRange(0, backedTextInputViewTextCopy.length)];
+  
+  [attributedTextCopy removeAttribute:RCTTextAttributesTagAttributeName
+                                range:NSMakeRange(0, attributedTextCopy.length)];
+  
+  textNeedsUpdate = ([self textOf:attributedTextCopy equals:backedTextInputViewTextCopy] == NO);
+  
+  if (eventLag == 0 && textNeedsUpdate) {
+    UITextRange *selection = self.backedTextInputView.selectedTextRange;
+    NSInteger oldTextLength = self.backedTextInputView.attributedText.string.length;
+    
+    [self.backedTextInputView setAttributedTextWithImage:attributedText
+                                  descendantViews:descendantViews];
+    
+    if (selection.empty) {
+      // Maintaining a cursor position relative to the end of the old text.
+      NSInteger offsetStart =
+      [self.backedTextInputView offsetFromPosition:self.backedTextInputView.beginningOfDocument
+                                        toPosition:selection.start];
+      NSInteger offsetFromEnd = oldTextLength - offsetStart;
+      NSInteger newOffset = attributedText.string.length - offsetFromEnd;
+      UITextPosition *position =
+      [self.backedTextInputView positionFromPosition:self.backedTextInputView.beginningOfDocument
+                                              offset:newOffset];
+      [self.backedTextInputView setSelectedTextRange:[self.backedTextInputView textRangeFromPosition:position toPosition:position]
+                                      notifyDelegate:YES];
+    }
+    
+    [self updateLocalData];
+  } else if (eventLag > RCTTextUpdateLagWarningThreshold) {
+    RCTLogWarn(@"Native TextInput(%@) is %lld events ahead of JS - try to make your JS faster.", self.backedTextInputView.attributedText.string, (long long)eventLag);
+  }
+}
+
 - (BOOL)textOf:(NSAttributedString*)newText equals:(NSAttributedString*)oldText{
   // When the dictation is running we can't update the attibuted text on the backed up text view
   // because setting the attributed string will kill the dictation. This means that we can't impose
@@ -135,7 +179,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   // Remove tag attribute to ensure correct attributed string comparison.
   NSMutableAttributedString *const backedTextInputViewTextCopy = [self.backedTextInputView.attributedText mutableCopy];
   NSMutableAttributedString *const attributedTextCopy = [attributedText mutableCopy];
-
+  
   [backedTextInputViewTextCopy removeAttribute:RCTTextAttributesTagAttributeName
                                          range:NSMakeRange(0, backedTextInputViewTextCopy.length)];
 
@@ -149,7 +193,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
     NSInteger oldTextLength = self.backedTextInputView.attributedText.string.length;
 
     self.backedTextInputView.attributedText = attributedText;
-
+    
     if (selection.empty) {
       // Maintaining a cursor position relative to the end of the old text.
       NSInteger offsetStart =
@@ -377,7 +421,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
                                         key:text
                                  eventCount:_nativeEventCount];
   }
-
+  
   if (_maxLength) {
     NSUInteger allowedLength = _maxLength.integerValue - backedTextInputView.attributedText.string.length + range.length;
 
@@ -399,7 +443,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 
         [self textInputDidChange];
       }
-
+      
       return NO;
     }
   }
