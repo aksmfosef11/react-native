@@ -73,6 +73,7 @@ RCT_EXPORT_VIEW_PROPERTY(selectable, BOOL)
 - (void)uiManagerWillPerformMounting:(__unused RCTUIManager *)uiManager
 {
   for (RCTTextShadowView *shadowView in _shadowViews) {
+  
     [shadowView uiManagerWillPerformMounting];
   }
 }

@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (void)setAttributedTextWithImage:(NSAttributedString *)attributedText
                    descendantViews:(NSArray<UIView *> *)descendantViews;
+- (NSString *)getPlainString;
 
 @property (nonatomic, readonly) UIView<RCTBackedTextInputViewProtocol> *backedTextInputView;
 

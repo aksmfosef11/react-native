@@ -109,6 +109,7 @@
 		8F2807C7202D2B6B005D65E6 /* RCTInputAccessoryViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C1202D2B6A005D65E6 /* RCTInputAccessoryViewManager.m */; };
 		8F2807C8202D2B6B005D65E6 /* RCTInputAccessoryView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C3202D2B6A005D65E6 /* RCTInputAccessoryView.m */; };
 		8F2807C9202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F2807C5202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m */; };
+		EB4F3512232F5664003509BD /* EmojiTextAttachment.m in Sources */ = {isa = PBXBuildFile; fileRef = EB4F3511232F5664003509BD /* EmojiTextAttachment.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -246,6 +247,8 @@
 		8F2807C4202D2B6A005D65E6 /* RCTInputAccessoryView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTInputAccessoryView.h; sourceTree = "<group>"; };
 		8F2807C5202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTInputAccessoryViewContent.m; sourceTree = "<group>"; };
 		8F2807C6202D2B6B005D65E6 /* RCTInputAccessoryViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTInputAccessoryViewManager.h; sourceTree = "<group>"; };
+		EB4F3511232F5664003509BD /* EmojiTextAttachment.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EmojiTextAttachment.m; sourceTree = "<group>"; };
+		EB4F3513232F57CF003509BD /* EmojiTextAttachment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EmojiTextAttachment.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -292,6 +295,8 @@
 		5956B0FF200FEBA9008D9D16 /* TextInput */ = {
 			isa = PBXGroup;
 			children = (
+				EB4F3511232F5664003509BD /* EmojiTextAttachment.m */,
+				EB4F3513232F57CF003509BD /* EmojiTextAttachment.h */,
 				5C245F38205E216A00D936E9 /* RCTInputAccessoryShadowView.h */,
 				5C245F37205E216A00D936E9 /* RCTInputAccessoryShadowView.m */,
 				8F2807C4202D2B6A005D65E6 /* RCTInputAccessoryView.h */,
@@ -431,6 +436,7 @@
 					};
 					58B5119A1A9E6C1200147676 = {
 						CreatedOnToolsVersion = 6.1.1;
+						LastSwiftMigration = 1020;
 					};
 				};
 			};
@@ -495,6 +501,7 @@
 				8F2807C7202D2B6B005D65E6 /* RCTInputAccessoryViewManager.m in Sources */,
 				5956B146200FEBAA008D9D16 /* RCTConvert+Text.m in Sources */,
 				8F2807C9202D2B6B005D65E6 /* RCTInputAccessoryViewContent.m in Sources */,
+				EB4F3512232F5664003509BD /* EmojiTextAttachment.m in Sources */,
 				5956B13F200FEBAA008D9D16 /* RCTTextAttributes.m in Sources */,
 				8F2807C8202D2B6B005D65E6 /* RCTInputAccessoryView.m in Sources */,
 				5956B143200FEBAA008D9D16 /* RCTTextView.m in Sources */,
@@ -669,29 +676,38 @@
 		58B511B01A9E6C1300147676 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Image/\"",
 					"\"$(SRCROOT)/../../React/Base\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUN_CLANG_STATIC_ANALYZER = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
 		58B511B11A9E6C1300147676 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_STATIC_ANALYZER_MODE = deep;
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../Image/\"",
 					"\"$(SRCROOT)/../../React/Base\"",
 				);
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

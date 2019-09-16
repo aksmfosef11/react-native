@@ -203,19 +203,14 @@
           
           [descendantViews addObject:descendantView];
         }];
-      RCTImageView *test = (RCTImageView *)descendantViews[0];
-      NSLog(@"123%@",test);
-      NSLog(@"123%@",test.imageSources);
-      NSLog(@"123%@",test.image);
-
-      
-//        [textView setTextStorage:textStorage
-//                    contentFrame:contentFrame
-//                 descendantViews:descendantViews];
-      // 실제 Attributed Text
-      [baseTextInputView setAttributedTextWithImage:attributedText
+    
+      if (descendantViews.count == 0){
+         baseTextInputView.attributedText = attributedText;
+      }else{
+        [baseTextInputView setAttributedTextWithImage:attributedText
                                   descendantViews:descendantViews];
-//      baseTextInputView.attributedText = attributedText;
+      }
+     
     }
   }];
 }

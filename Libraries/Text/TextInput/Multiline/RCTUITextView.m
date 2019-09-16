@@ -14,6 +14,7 @@
 
 #import "RCTBackedTextInputDelegateAdapter.h"
 #import "RCTBaseTextShadowView.h"
+#import "../EmojiTextAttachment.h"
 
 @implementation RCTUITextView
 {
@@ -129,9 +130,9 @@ static UIColor *defaultPlaceholderColor()
      
      CGSize fittingSize = [shadowView sizeThatFitsMinimumSize:CGSizeMake(30, 30)
                                                   maximumSize:CGSizeMake(30, 30)];
-     NSTextAttachment *attachment = [NSTextAttachment new];
+     EmojiTextAttachment *attachment = [EmojiTextAttachment new];
      NSString *test = [[descendantViews[index].imageSources[0].request.URL.absoluteString componentsSeparatedByString:@"/"] lastObject];
-    
+     attachment.emojiName = test;
      attachment.image = [UIImage imageNamed:test];
      attachment.bounds = (CGRect){CGPointZero, fittingSize};
      index = index + 1;
@@ -316,3 +317,5 @@ static UIColor *defaultPlaceholderColor()
 }
 
 @end
+
+

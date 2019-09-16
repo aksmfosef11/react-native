@@ -14,11 +14,13 @@
 #import <React/RCTUIManager.h>
 #import <React/RCTUtils.h>
 #import <React/UIView+React.h>
+#import <UIKit/UIKit.h>
 
 #import "RCTInputAccessoryView.h"
 #import "RCTInputAccessoryViewContent.h"
 #import "RCTTextAttributes.h"
 #import "RCTTextSelection.h"
+#import "EmojiTextAttachment.h"
 
 @implementation RCTBaseTextInputView {
   __weak RCTBridge *_bridge;
@@ -55,6 +57,100 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
 - (void)didUpdateReactSubviews
 {
   // Do nothing.
+}
+
+- (NSString *)getPlainString
+{
+  NSMutableString *str = [[NSMutableString alloc] init];
+  __block NSDictionary *emojis = [NSDictionary dictionaryWithObjectsAndKeys:@"<분노>", @"e000_00001_emoji",
+                          @"<웃음>", @"e000_00002_emoji",
+                          @"<ㅠㅠ>", @"e000_00003_emoji",
+                          @"<빠직>", @"e000_00004_emoji",
+                          @"<화남>", @"e000_00005_emoji",
+                          @"<안녕>", @"e000_00006_emoji",
+                          @"<반함>", @"e000_00007_emoji",
+                          @"<으으>", @"e000_00008_emoji",
+                          @"<피곤>", @"e000_00009_emoji",
+                          @"<흡족>", @"e000_00010_emoji",
+                          @"<좋아>", @"e000_00011_emoji",
+                          @"<눈물>", @"e000_00012_emoji",
+                          @"<씨익>", @"e000_00013_emoji",
+                          @"<멘붕>", @"e000_00014_emoji",
+                          @"<놀람>", @"e000_00015_emoji",
+                          @"<슬픔>", @"e000_00016_emoji",
+                          @"<힘듦>", @"e000_00017_emoji",
+                          @"<폭소>", @"e000_00018_emoji",
+                          @"<못마땅>", @"e000_00019_emoji",
+                          @"<부르르>", @"e000_00020_emoji",
+                          @"<버럭>", @"e000_00021_emoji",
+                          @"<훗>", @"e000_00022_emoji",
+                          @"<제발>", @"e000_00023_emoji",
+                          @"<행복>", @"e000_00024_emoji",
+                          @"<ㅜㅜ>", @"e000_00025_emoji",
+                          @"<울먹>", @"e000_00026_emoji",
+                          @"<쓰읍>", @"e000_00027_emoji",
+                          @"<수줍>", @"e000_00028_emoji",
+                          @"<발그레>", @"e000_00029_emoji",
+                          @"<메롱>", @"e000_00030_emoji",
+                          @"<커피>", @"e000_00031_emoji",
+                          @"<활력>", @"e000_00032_emoji",
+                          @"<엄지척>", @"e000_00033_emoji",
+                          @"<약>", @"e000_00034_emoji",
+                          @"<소주>", @"e000_00035_emoji",
+                          @"<촛불>", @"e000_00036_emoji",
+                          @"<고기>", @"e000_00037_emoji",
+                          @"<돈>", @"e000_00038_emoji",
+                          @"<지갑>", @"e000_00039_emoji",
+                          @"<음악>", @"e000_00040_emoji",
+                          @"<선물>", @"e000_00041_emoji",
+                          @"<밥>", @"e000_00042_emoji",
+                          @"<태양>", @"e000_00043_emoji",
+                          @"<구름>", @"e000_00044_emoji",
+                          @"<달>", @"e000_00045_emoji",
+                          @"<아이스음료>", @"e000_00046_emoji",
+                          @"<사탕>", @"e000_00047_emoji",
+                          @"<막대사탕>", @"e000_00048_emoji",
+                          @"<풍선>", @"e000_00049_emoji",
+                          @"<비타민씨>", @"e000_00050_emoji",
+                          @"<우동>", @"e000_00051_emoji",
+                          @"<사과>", @"e000_00052_emoji",
+                          @"<비>", @"e000_00053_emoji",
+                          @"<축하>", @"e000_00054_emoji",
+                          @"<담배>", @"e000_00055_emoji",
+                          @"<하트>", @"e000_00056_emoji",
+                          @"<고양이>", @"e000_00057_emoji",
+                          @"<강아지>", @"e000_00058_emoji",
+                          @"<발자국>", @"e000_00059_emoji",
+                          @"<꽃>", @"e000_00060_emoji",
+                          @"<피자>", @"e000_00061_emoji",
+                          @"<팝콘>", @"e000_00062_emoji",
+                          @"<맥주>", @"e000_00063_emoji",
+                          @"<와인>", @"e000_00064_emoji",
+                          @"<편지>", @"e000_00065_emoji",
+                          @"<주사>", @"e000_00066_emoji",
+                          @"<햄버거>", @"e000_00067_emoji",
+                          @"<케익>", @"e000_00068_emoji",
+                          @"<번개>", @"e000_00069_emoji",
+                                  @"<리본>", @"e000_00070_emoji", nil];
+  
+
+  [str setString:self.attributedText.string];
+  __block int base = 0;
+  [self.attributedText enumerateAttribute:NSAttachmentAttributeName
+                             inRange:NSMakeRange(0, self.attributedText.length)
+                             options:0
+                          usingBlock:
+   ^(EmojiTextAttachment *attachment, NSRange range, __unused BOOL *stop) {
+     if (!attachment) {
+       return;
+     }
+     NSString *emojiURL = attachment.emojiName;
+     NSString *getName = [emojis objectForKey:emojiURL];
+     [str replaceCharactersInRange:NSMakeRange(range.location+base,range.length) withString:getName];
+     base = base + (int)getName.length - 1;
+   }
+   ];
+  return str;
 }
 
 #pragma mark - Properties
@@ -491,15 +587,16 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
   }
 
   _nativeEventCount++;
-
+  
   if (_onChange) {
     _onChange(@{
-       @"text": self.attributedText.string,
+       @"text": [self getPlainString],
        @"target": self.reactTag,
        @"eventCount": @(_nativeEventCount),
     });
   }
 }
+
 
 - (void)textInputDidChangeSelection
 {
