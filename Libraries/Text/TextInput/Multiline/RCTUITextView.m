@@ -41,16 +41,16 @@ static UIColor *defaultPlaceholderColor()
                                              selector:@selector(textDidChange)
                                                  name:UITextViewTextDidChangeNotification
                                                object:self];
-
+    
     _placeholderView = [[UILabel alloc] initWithFrame:self.bounds];
     _placeholderView.isAccessibilityElement = NO;
     _placeholderView.numberOfLines = 0;
     _placeholderView.textColor = defaultPlaceholderColor();
     [self addSubview:_placeholderView];
-
+    
     _textInputDelegateAdapter = [[RCTBackedTextViewDelegateAdapter alloc] initWithTextView:self];
   }
-
+  
   return self;
 }
 
@@ -62,19 +62,19 @@ static UIColor *defaultPlaceholderColor()
 - (NSString *)accessibilityLabel
 {
   NSMutableString *accessibilityLabel = [NSMutableString new];
-
+  
   NSString *superAccessibilityLabel = [super accessibilityLabel];
   if (superAccessibilityLabel.length > 0) {
     [accessibilityLabel appendString:superAccessibilityLabel];
   }
-
+  
   if (self.placeholder.length > 0 && self.attributedText.string.length == 0) {
     if (accessibilityLabel.length > 0) {
       [accessibilityLabel appendString:@" "];
     }
     [accessibilityLabel appendString:self.placeholder];
   }
-
+  
   return accessibilityLabel;
 }
 
@@ -126,7 +126,7 @@ static UIColor *defaultPlaceholderColor()
      if (!shadowView) {
        return;
      }
-    
+     
      
      CGSize fittingSize = [shadowView sizeThatFitsMinimumSize:CGSizeMake(30, 30)
                                                   maximumSize:CGSizeMake(30, 30)];
@@ -134,20 +134,12 @@ static UIColor *defaultPlaceholderColor()
      NSString *test = [[descendantViews[index].imageSources[0].request.URL.absoluteString componentsSeparatedByString:@"/"] lastObject];
      attachment.emojiName = test;
      attachment.image = [UIImage imageNamed:test];
-     attachment.bounds = (CGRect){CGPointZero, fittingSize};
+     attachment.bounds = (CGRect){CGPointMake(0, -7.5), fittingSize};
      index = index + 1;
      [newAttributedString addAttribute:NSAttachmentAttributeName value:attachment range:range];
    }
    ];
-  if (![super.attributedText.string isEqualToString:attributedText.string]) {
-    [super setAttributedText:newAttributedString];
-  } else {
-    // But if the text is preserved, we just copying the attributes from the source string.
-    if (![super.attributedText isEqualToAttributedString:attributedText]) {
-      [self copyTextAttributesFrom:attributedText];
-    }
-  }
-  
+  [super setAttributedText:newAttributedString];
   [self textDidChange];
 }
 
@@ -157,19 +149,19 @@ static UIColor *defaultPlaceholderColor()
   // Using `setAttributedString:` while user is typing breaks some internal mechanics
   // when entering complex input languages such as Chinese, Korean or Japanese.
   // see: https://github.com/facebook/react-native/issues/19339
-
+  
   // We try to avoid calling this method as much as we can.
   // If the text has changed, there is nothing we can do.
-
+  
   if (![super.attributedText.string isEqualToString:attributedText.string]) {
     [super setAttributedText:attributedText];
   } else {
-  // But if the text is preserved, we just copying the attributes from the source string.
+    // But if the text is preserved, we just copying the attributes from the source string.
     if (![super.attributedText isEqualToAttributedString:attributedText]) {
       [self copyTextAttributesFrom:attributedText];
     }
   }
-
+  
   [self textDidChange];
 }
 
@@ -182,7 +174,7 @@ static UIColor *defaultPlaceholderColor()
     // so the adapter must not generate a notification for it.
     [_textInputDelegateAdapter skipNextTextInputDidChangeSelectionEventWithTextRange:selectedTextRange];
   }
-
+  
   [super setSelectedTextRange:selectedTextRange];
 }
 
@@ -227,14 +219,14 @@ static UIColor *defaultPlaceholderColor()
   // So, we have to consider `placeholderSize` as a minimum `contentSize`.
   // Returning size DOES contain `textContainerInset` (aka `padding`).
   return CGSizeMake(
-    MAX(contentSize.width, placeholderSize.width),
-    MAX(contentSize.height, placeholderSize.height));
+                    MAX(contentSize.width, placeholderSize.width),
+                    MAX(contentSize.height, placeholderSize.height));
 }
 
 - (void)layoutSubviews
 {
   [super layoutSubviews];
-
+  
   CGRect textFrame = UIEdgeInsetsInsetRect(self.bounds, self.textContainerInset);
   CGFloat placeholderHeight = [_placeholderView sizeThatFits:textFrame.size].height;
   textFrame.size.height = MIN(placeholderHeight, textFrame.size.height);
@@ -265,19 +257,19 @@ static UIColor *defaultPlaceholderColor()
   dispatch_once(&onceToken, ^{
     useCustomImplementation = ![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){9,0,0}];
   });
-
+  
   if (!useCustomImplementation) {
     return [super sizeThatFits:size];
   }
-
+  
   if (!_detachedTextView) {
     _detachedTextView = [UITextView new];
   }
-
+  
   _detachedTextView.attributedText = self.attributedText;
   _detachedTextView.font = self.font;
   _detachedTextView.textContainerInset = self.textContainerInset;
-
+  
   return [_detachedTextView sizeThatFits:size];
 }
 
@@ -288,7 +280,7 @@ static UIColor *defaultPlaceholderColor()
   if (_contextMenuHidden) {
     return NO;
   }
-
+  
   return [super canPerformAction:action withSender:sender];
 }
 
@@ -305,14 +297,14 @@ static UIColor *defaultPlaceholderColor()
 - (void)copyTextAttributesFrom:(NSAttributedString *)sourceString
 {
   [self.textStorage beginEditing];
-
+  
   NSTextStorage *textStorage = self.textStorage;
   [sourceString enumerateAttributesInRange:NSMakeRange(0, sourceString.length)
                                    options:NSAttributedStringEnumerationReverse
                                 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
                                   [textStorage setAttributes:attrs range:range];
                                 }];
-
+  
   [self.textStorage endEditing];
 }
 

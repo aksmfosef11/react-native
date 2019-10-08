@@ -109,9 +109,7 @@
 
       [descendantViews addObject:descendantView];
     }];
-    if ([descendantViews count] != 0){
-      RCTImageView *test = (RCTImageView *)descendantViews[0];
-    }
+    
     // Removing all references to Shadow Views to avoid unnececery retainning.
     [textStorage removeAttribute:RCTBaseTextShadowViewEmbeddedShadowViewAttributeName range:NSMakeRange(0, textStorage.length)];
 
