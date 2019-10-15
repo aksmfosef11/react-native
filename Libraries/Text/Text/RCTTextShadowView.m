@@ -61,6 +61,17 @@
   _needsUpdateView = YES;
 }
 
+static UIImage *emptyImg = NULL;
+- (UIImage*)getEmptyImg
+{
+  if (emptyImg == NULL) {
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(1, 1), NO, 0);
+    emptyImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+  }
+  return emptyImg;
+}
+
 #pragma mark - RCTUIManagerObserver
 
 - (void)uiManagerWillPerformMounting
@@ -188,6 +199,7 @@
       CGSize fittingSize = [shadowView sizeThatFitsMinimumSize:CGSizeZero
                                                    maximumSize:size];
       NSTextAttachment *attachment = [NSTextAttachment new];
+      [attachment setImage:[self getEmptyImg]];
       attachment.bounds = (CGRect){CGPointZero, fittingSize};
       [attributedText addAttribute:NSAttachmentAttributeName value:attachment range:range];
     }
