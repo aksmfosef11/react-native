@@ -144,6 +144,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithFrame:(CGRect)frame)
      if (!attachment) {
        return;
      }
+     if(![attachment respondsToSelector:@selector(emojiName)]){
+       return;
+     }
      NSString *emojiURL = attachment.emojiName;
      NSString *getName = [emojis objectForKey:emojiURL];
      [str replaceCharactersInRange:NSMakeRange(range.location+base,range.length) withString:getName];
